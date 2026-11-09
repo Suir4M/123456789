@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
+<title>Étirements du matin</title>
+<style>
+  :root{
+    --bg:#14110f; --card:#1f1a17; --ink:#f6efe7; --muted:#b9ab9c;
+    --accent:#f2a65a; --accent2:#e76f51; --ok:#8fd19e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;
+       padding-bottom:env(safe-area-inset-bottom)}
+  h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em}
+
+  /* Barre de progression fixe */
+  .progress{position:fixed;top:0;left:0;right:0;z-index:10;height:5px;background:rgba(255,255,255,.08)}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+
+  /* Intro */
+  .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;scroll-snap-align:start;
+        background:radial-gradient(120% 80% at 80% 0%,rgba(242,166,90,.22),transparent 60%),
+                   radial-gradient(90% 60% at 0% 100%,rgba(231,111,81,.18),transparent 60%)}
+  .hero small{color:var(--accent);text-transform:uppercase;letter-spacing:.18em;font-size:.75rem}
+  .hero h1{font-size:clamp(2.4rem,9vw,4rem);margin:10px 0 14px;line-height:1.05}
+  .hero p{color:var(--muted);max-width:32rem}
+  .stats{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+  .pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);padding:8px 14px;border-radius:99px;font-size:.9rem}
+  .scroll-hint{margin-top:40px;color:var(--muted);font-size:.85rem;animation:bob 1.8s infinite}
+  @keyframes bob{50%{transform:translateY(6px)}}
+
+  /* Cartes de poses */
+  .pose{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:28px 16px;scroll-snap-align:start}
+  .card{width:100%;max-width:520px;background:var(--card);border-radius:28px;overflow:hidden;
+        box-shadow:0 20px 60px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.06);
+        opacity:0;transform:translateY(30px);transition:opacity .6s,transform .6s}
+  .card.in{opacity:1;transform:none}
+  .media{position:relative;aspect-ratio:4/3;background:#2a231f;overflow:hidden}
+  .media img{width:100%;height:100%;object-fit:cover;display:block}
+  .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,hsl(var(--h) 45% 28%),hsl(calc(var(--h) + 40) 50% 18%));
+      color:rgba(255,255,255,.75);font-family:Georgia,serif;font-size:3.4rem}
+  .badge{position:absolute;top:14px;left:14px;background:rgba(20,17,15,.7);backdrop-filter:blur(6px);
+         padding:6px 12px;border-radius:99px;font-size:.8rem}
+  .body{padding:22px 22px 24px}
+  .body h2{font-size:1.7rem;margin-bottom:4px}
+  .meta{color:var(--accent);font-size:.9rem;margin-bottom:12px}
+  .body p{color:var(--muted)}
+  .tip{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent);background:rgba(242,166,90,.08);border-radius:0 12px 12px 0;font-size:.92rem}
+  .actions{display:flex;gap:10px;margin-top:20px}
+  button{font:inherit;border:0;border-radius:16px;padding:14px 18px;cursor:pointer;font-weight:600;transition:transform .1s}
+  button:active{transform:scale(.97)}
+  .go{flex:1;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#2a130a}
+  .done{background:rgba(255,255,255,.08);color:var(--ink);min-width:56px}
+  .pose.is-done .done{background:var(--ok);color:#10301a}
+  .pose.is-done .card{border-color:rgba(143,209,158,.5)}
+
+  /* Fin */
+  .end{min-height:70svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px;gap:14px;scroll-snap-align:start}
+  .end h2{font-size:2.2rem}
+  .end p{color:var(--muted)}
+  .reset{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="progress"><i id="bar"></i></div>
+
+<header class="hero">
+  <small id="date"></small>
+  <h1>Étirements<br>du matin</h1>
+  <p>Fais défiler, une pose à la fois. Pas besoin de réfléchir : tu suis, c'est tout. 🌅</p>
+  <div class="stats">
+    <span class="pill" id="count"></span>
+    <span class="pill" id="total"></span>
+  </div>
+  <div class="scroll-hint">↓ Fais défiler pour commencer</div>
+</header>
+
+<main id="poses"></main>
+
+<footer class="end">
+  <h2>Bravo ✨</h2>
+  <p id="endmsg"></p>
+  <button class="reset" id="reset">Recommencer</button>
+</footer>
+
+<script>
+/* =====================================================================
+   ✏️  MODIFIE ICI TES POSES
+   - media : chemin vers ta photo, ex : "img/cobra.jpg"
+   - duree : durée en secondes (le chrono se lance avec le bouton)
+   - astuce : mets "-" pour ne rien afficher
+   ===================================================================== */
+const POSES = [
+  { nom:"Squat Cossak", duree:60, media:"img/cossack-squat.jpeg",
+    texte:"Faire des répétitions lentes contrôlées de squat cossak des deux côtés",
+    astuce:"Garde le dos droit." },
+  { nom:"Padahastasana", duree:30, media:"img/Padahastasana-–-hand-to-foot-posture-e1497473909414.jpg",
+    texte:"En position debout, essaye de toucher tes pieds avec tes mains",
+    astuce:"Respire profondément à chaque tentatives." },
+  { nom:"Le cobra jambe qui croise", duree:60, media:"img/IMG_9751.jpg",
+    texte:"Allongé sur le ventre, croise une jambe et pousses sur tes bras pour lever le torse. (30-30)",
+    astuce:"-" },
+  { nom:"Grenouille", duree:40, media:"img/ebe7dea7bba0a5e1da1f5bf865bb7dd357730b96-2000x1107.jpg",
+    texte:"Allongé sur le ventre, jambes écarté position grenouille et on releve les torse avec les bras",
+    astuce:"-" },
+  { nom:"Papillon", duree:30, media:"img/posture-papillon-yoga.jpg",
+    texte:"En tailleur mais tes pieds se touche, et va chercher loin pour t'allonger sur le ventre si tu peux.",
+    astuce:"Grappille avec tes mains." },
+  { nom:"Upavistha Konasana", duree:60, media:"img/adv238.png",
+    texte:"Jambes écartés, assis sur les fesses et vient matcher tes main avec ton pied en gardant les jambes tendues. (30-30)",
+    astuce:"Respire en donnant des accout pour gagner de l'amplitude." },
+  { nom:"Jambes écarté", duree:30, media:"img/IMG_9744.jpg",
+    texte:"Jambes écartés, assis sur les fesses et vient chercher loiiiiiin devant toi.",
+    astuce:"Expire à chaque poussée." },
+  { nom:"Etirement de tout le glutéal", duree:60, media:"img/Etirement-du-Fessier.png",
+    texte:"Assis, 1 jambe tendue, l'autre vient croiser au dessus en on passe le coude opposé derriere le genou de la jambe croisé. (30-30)",
+    astuce:"Tourne le torse pour maximiser les effets." },
+  { nom:"Grand écart", duree:30, media:"img/IMG_8387.jpg",
+    texte:"Essayer de chercher toujours plus loin sans se blesser, ressentir son corps",
+    astuce:"Expirer en descente." },
+  { nom:"Le Pont", duree:45, media:"img/560-pont-complet.jpg",
+    texte:"Se mettre en position pont.",
+    astuce:"Gainer la sangle abdominal." },
+  { nom:"Chat/Chameau", duree:40, media:"img/femme-faisant-dos-chat-camel-étirement-arrière-plan-stretch-exercice-plat-vecteur-illustration-isolé-sur-fond-blanc-217275246.jpg",
+    texte:"Alterner lentement en ressentant tous les muscles entre la position du chat et du chameau.",
+    astuce:"Bien ressentir tous les muscles." },
+  { nom:"Mix Epaule", duree:100, media:"img/a08b9d773e9572d1193f6303e536b0a9.jpg",
+    texte:"Essayer de gagner de l'amplitude dans les épaules.",
+    astuce:"Faire aux sensations." },
+  { nom:"Mix Cheville", duree:100, media:"img/Mouvements-des-Chevilles.jpg",
+    texte:"Essayer de gagner de l'amplitude dans les chevilles.",
+    astuce:"Forcer avec ses mains au besoin." },
+];
+/* ===================================================================== */
+
+const KEY = "etirements-" + new Date().toISOString().slice(0,10); // une sauvegarde par jour
+const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+const $ = s => document.querySelector(s);
+
+$("#date").textContent = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+$("#count").textContent = POSES.length + " poses";
+$("#total").textContent = "≈ " + Math.round(POSES.reduce((a,p)=>a+p.duree,0)/60) + " min";
+
+const wrap = $("#poses");
+POSES.forEach((p,i)=>{
+  const sec = document.createElement("section");
+  sec.className = "pose" + (state[i] ? " is-done" : "");
+  sec.innerHTML = `
+    <article class="card">
+      <div class="media">
+        <div class="ph" style="--h:${(i*37 + 15) % 360}">${i+1}</div>
+        <span class="badge">${i+1} / ${POSES.length}</span>
+      </div>
+      <div class="body">
+        <h2>${p.nom}</h2>
+        <div class="meta">⏱ ${p.duree} secondes</div>
+        <p>${p.texte}</p>
+        ${p.astuce && p.astuce !== "-" ? `<div class="tip">💡 ${p.astuce}</div>` : ""}
+        <div class="actions">
+          <button class="go">▶ Lancer le chrono</button>
+          <button class="done" aria-label="Marquer comme fait">✓</button>
+        </div>
+      </div>
+    </article>`;
+  wrap.appendChild(sec);
+
+  // photo : remplace le visuel de secours dès qu'elle est chargée
+  const img = new Image();
+  img.alt = p.nom;
+  img.loading = "lazy";
+  img.onload = () => { const m = sec.querySelector(".media"); m.querySelector(".ph").remove(); m.prepend(img); };
+  img.src = p.media;
+
+  const go = sec.querySelector(".go");
+  let t = null;
+  const setDone = v => { state[i]=v; sec.classList.toggle("is-done",v); save(); };
+  go.onclick = () => {
+    if (t) { clearInterval(t); t=null; go.textContent="▶ Lancer le chrono"; return; }
+    let left = p.duree; go.textContent = "⏸ " + left + " s";
+    t = setInterval(()=>{
+      left--; go.textContent = "⏸ " + left + " s";
+      if (left<=0) { clearInterval(t); t=null; go.textContent="▶ Relancer"; navigator.vibrate?.(300); setDone(true); }
+    },1000);
+  };
+  sec.querySelector(".done").onclick = () => setDone(!state[i]);
+});
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(state));
+  const n = POSES.filter((_,i)=>state[i]).length;
+  $("#bar").style.width = (n/POSES.length*100) + "%";
+  $("#endmsg").textContent = n===POSES.length
+    ? "Routine terminée, bien joué ! Ta journée peut commencer. 🎉"
+    : n + " pose" + (n>1?"s":"") + " sur " + POSES.length + " faites. Il t'en reste encore quelques-unes !";
+}
+$("#reset").onclick = () => { POSES.forEach((_,i)=>state[i]=false); document.querySelectorAll(".pose").forEach(s=>s.classList.remove("is-done")); save(); scrollTo({top:0}); };
+save();
+
+// apparition des cartes au défilement
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add("in"); }),{threshold:.2});
+document.querySelectorAll(".card").forEach(c=>io.observe(c));
+</script>
+</body>
+</html>
