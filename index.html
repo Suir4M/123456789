@@ -96,43 +96,43 @@
    - astuce : mets "-" pour ne rien afficher
    ===================================================================== */
 const POSES = [
-  { nom:"Squat Cossak", duree:60, media:"123456789/img/cossack-squat.jpeg",
+  { nom:"Squat Cossak", duree:60, media:"img/cossack-squat.jpeg",
     texte:"Faire des répétitions lentes contrôlées de squat cossak des deux côtés",
     astuce:"Garde le dos droit." },
-  { nom:"Padahastasana", duree:30, media:"123456789/img/Padahastasana-–-hand-to-foot-posture-e1497473909414.jpg",
+  { nom:"Padahastasana", duree:30, media:"img/padaaa.jpg",
     texte:"En position debout, essaye de toucher tes pieds avec tes mains",
     astuce:"Respire profondément à chaque tentatives." },
-  { nom:"Le cobra jambe qui croise", duree:60, media:"123456789/img/IMG_9751.jpg",
+  { nom:"Le cobra jambe qui croise", duree:60, media:"img/IMG_9751.jpg",
     texte:"Allongé sur le ventre, croise une jambe et pousses sur tes bras pour lever le torse. (30-30)",
     astuce:"-" },
-  { nom:"Grenouille", duree:40, media:"123456789/img/ebe7dea7bba0a5e1da1f5bf865bb7dd357730b96-2000x1107.jpg",
+  { nom:"Grenouille", duree:40, media:"img/grenouille.jpg",
     texte:"Allongé sur le ventre, jambes écarté position grenouille et on releve les torse avec les bras",
     astuce:"-" },
-  { nom:"Papillon", duree:30, media:"123456789/img/posture-papillon-yoga.jpg",
+  { nom:"Papillon", duree:30, media:"img/papillon.jpg",
     texte:"En tailleur mais tes pieds se touche, et va chercher loin pour t'allonger sur le ventre si tu peux.",
     astuce:"Grappille avec tes mains." },
-  { nom:"Upavistha Konasana", duree:60, media:"123456789/img/adv238.png",
+  { nom:"Upavistha Konasana", duree:60, media:"img/adv238.png",
     texte:"Jambes écartés, assis sur les fesses et vient matcher tes main avec ton pied en gardant les jambes tendues. (30-30)",
     astuce:"Respire en donnant des accout pour gagner de l'amplitude." },
-  { nom:"Jambes écarté", duree:30, media:"123456789/img/IMG_9744.jpg",
+  { nom:"Jambes écarté", duree:30, media:"img/IMG_9744.jpg",
     texte:"Jambes écartés, assis sur les fesses et vient chercher loiiiiiin devant toi.",
     astuce:"Expire à chaque poussée." },
-  { nom:"Etirement de tout le glutéal", duree:60, media:"123456789/img/Etirement-du-Fessier.png",
+  { nom:"Etirement de tout le glutéal", duree:60, media:"img/fessier.png",
     texte:"Assis, 1 jambe tendue, l'autre vient croiser au dessus en on passe le coude opposé derriere le genou de la jambe croisé. (30-30)",
     astuce:"Tourne le torse pour maximiser les effets." },
-  { nom:"Grand écart", duree:30, media:"123456789/img/IMG_8387.jpg",
+  { nom:"Grand écart", duree:30, media:"img/IMG_8387.jpg",
     texte:"Essayer de chercher toujours plus loin sans se blesser, ressentir son corps",
     astuce:"Expirer en descente." },
-  { nom:"Le Pont", duree:45, media:"123456789/img/560-pont-complet.jpg",
+  { nom:"Le Pont", duree:45, media:"img/560-pont-complet.jpg",
     texte:"Se mettre en position pont.",
     astuce:"Gainer la sangle abdominal." },
-  { nom:"Chat/Chameau", duree:40, media:"123456789/img/femme-faisant-dos-chat-camel-étirement-arrière-plan-stretch-exercice-plat-vecteur-illustration-isolé-sur-fond-blanc-217275246.jpg",
+  { nom:"Chat/Chameau", duree:40, media:"img/chatchameau.jpg",
     texte:"Alterner lentement en ressentant tous les muscles entre la position du chat et du chameau.",
     astuce:"Bien ressentir tous les muscles." },
-  { nom:"Mix Epaule", duree:100, media:"123456789/img/a08b9d773e9572d1193f6303e536b0a9.jpg",
+  { nom:"Mix Epaule", duree:100, media:"img/a08b9d773e9572d1193f6303e536b0a9.jpg",
     texte:"Essayer de gagner de l'amplitude dans les épaules.",
     astuce:"Faire aux sensations." },
-  { nom:"Mix Cheville", duree:100, media:"123456789/img/Mouvements-des-Chevilles.jpg",
+  { nom:"Mix Cheville", duree:100, media:"img/chevilles.jpg",
     texte:"Essayer de gagner de l'amplitude dans les chevilles.",
     astuce:"Forcer avec ses mains au besoin." },
 ];
@@ -169,10 +169,8 @@ POSES.forEach((p,i)=>{
     </article>`;
   wrap.appendChild(sec);
 
-  // photo : remplace le visuel de secours dès qu'elle est chargée
   const img = new Image();
   img.alt = p.nom;
-  img.loading = "lazy";
   img.onload = () => { const m = sec.querySelector(".media"); m.querySelector(".ph").remove(); m.prepend(img); };
   img.src = p.media;
 
